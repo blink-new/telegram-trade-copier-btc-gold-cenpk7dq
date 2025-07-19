@@ -17,7 +17,10 @@ export class TelegramService {
     try {
       // Validate bot token format
       if (!this.isValidBotToken(botToken)) {
-        throw new Error('Invalid bot token format');
+        if (!botToken || botToken.trim() === '') {
+          throw new Error('Bot token is required. Please enter a valid Telegram bot token or use "demo" for testing.');
+        }
+        throw new Error('Invalid bot token format. Expected format: 123456789:ABCdefGHIjklMNOpqrsTUVwxyz or use "demo" for testing.');
       }
 
       // Test connection to Telegram Bot API
@@ -59,10 +62,21 @@ export class TelegramService {
   }
 
   private isValidBotToken(token: string): boolean {
+    // Allow demo/test tokens
+    if (token === 'demo' || token === 'test') {
+      return true;
+    }
+    
+    // Check if token is empty or undefined
+    if (!token || token.trim() === '') {
+      return false;
+    }
+    
     // Telegram bot tokens follow the format: <bot_id>:<auth_token>
     // Example: 123456789:ABCdefGHIjklMNOpqrsTUVwxyz
-    const tokenPattern = /^\d+:[A-Za-z0-9_-]{35}$/;
-    return tokenPattern.test(token) || token === 'demo' || token === 'test';
+    // Bot ID: 8-10 digits, Auth token: 35-45 alphanumeric characters with underscores and hyphens
+    const tokenPattern = /^\d{8,10}:[A-Za-z0-9_-]{35,45}$/;
+    return tokenPattern.test(token);
   }
 
   async addChannel(channelId: string): Promise<boolean> {

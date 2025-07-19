@@ -36,13 +36,16 @@ export function TelegramBot({ onSignalReceived }: TelegramBotProps) {
   }, [telegramService]);
 
   const handleConnect = async () => {
-    if (!botToken.trim()) return;
+    if (!botToken.trim()) {
+      setConnectionError('Please enter a bot token or use "demo" for testing');
+      return;
+    }
     
     setIsConnecting(true);
     setConnectionError(null);
     
     try {
-      const connected = await telegramService.connect(botToken);
+      const connected = await telegramService.connect(botToken.trim());
       setIsConnected(connected);
       if (connected) {
         // Start demo signal simulation
@@ -162,14 +165,15 @@ export function TelegramBot({ onSignalReceived }: TelegramBotProps) {
                 Bot Token
               </label>
               <Input
-                type="password"
-                placeholder="Enter your Telegram bot token or 'demo' for testing"
+                type="text"
+                placeholder="Enter bot token (123456789:ABC...) or type 'demo' for testing"
                 value={botToken}
                 onChange={(e) => setBotToken(e.target.value)}
                 className="bg-gray-800 border-gray-700 text-white"
+                onKeyPress={(e) => e.key === 'Enter' && handleConnect()}
               />
               <p className="text-xs text-gray-400 mt-1">
-                Get your bot token from @BotFather on Telegram, or use 'demo' for testing
+                Get your bot token from @BotFather on Telegram, or type <span className="text-orange-400 font-mono">"demo"</span> for testing
               </p>
             </div>
             
@@ -178,13 +182,26 @@ export function TelegramBot({ onSignalReceived }: TelegramBotProps) {
                 <p className="text-sm text-red-400">{connectionError}</p>
               </div>
             )}
-            <Button
-              onClick={handleConnect}
-              disabled={!botToken.trim() || isConnecting}
-              className="w-full bg-orange-600 hover:bg-orange-700"
-            >
-              {isConnecting ? 'Connecting...' : 'Connect Bot'}
-            </Button>
+            <div className="flex space-x-2">
+              <Button
+                onClick={handleConnect}
+                disabled={!botToken.trim() || isConnecting}
+                className="flex-1 bg-orange-600 hover:bg-orange-700"
+              >
+                {isConnecting ? 'Connecting...' : 'Connect Bot'}
+              </Button>
+              <Button
+                onClick={() => {
+                  setBotToken('demo');
+                  setConnectionError(null);
+                }}
+                variant="outline"
+                className="border-orange-500 text-orange-400 hover:bg-orange-500/10"
+                disabled={isConnecting}
+              >
+                Demo
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="space-y-4">
